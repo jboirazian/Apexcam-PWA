@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexCam</title>
+  <script src="htmx.min.js"></script>
+  <script src="client-side-templates.js"></script>
+  <link rel="stylesheet" href="matcha.css">
+  <script>
+    function downloadFile(filePath) {
+      const a = document.createElement('a');
+      a.href = filePath;
+      a.download = filePath.substring(filePath.lastIndexOf('/') + 1); // Extract file name from path
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</head>
+<body>
+  <div hx-ext="client-side-templates">
+    <div hx-get="/cgi-bin/Config.cgi?action=dir&property=Video&format=all&from=0"
+            hx-swap="innerHTML"
+            hx-target="#video-list"
+            hx-trigger="load"
+            xslt-template="video-template">
+  </div>
+
+    <div id="video-list">
+      <!-- Video files will be loaded here -->
+    </div>
+
+    <script id="video-template" type="application/xml">
+      <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:output method="html" encoding="UTF-8"/>
+        <xsl:template match="/">
+          <xsl:apply-templates select="Video/file"/>
+        </xsl:template>
+        <xsl:template match="file">
+          <div>
+            <h3><xsl:value-of select="name"/></h3>
+            <p>Format: <xsl:value-of select="format"/> - <xsl:value-of select="size"/> bytes - <xsl:value-of select="attr"/></p>
+            <p>Resolution: <xsl:value-of select="format/@size"/> - FPS: <xsl:value-of select="format/@fps"/> - Duration: <xsl:value-of select="format/@time"/> seconds</p>
+            <p>Date: <xsl:value-of select="time"/></p>
+            <!-- Adding download button -->
+            <button class="success" onclick="downloadFile('{name}')">
+              Download
+            </button>
+            <button class="accent" onclick="downloadFile('{name}')">
+                View
+            </button>
+          </div>
+          <hr/>
+        </xsl:template>
+      </xsl:stylesheet>
+    </script>
+  </div>
+</body>
+</html>
